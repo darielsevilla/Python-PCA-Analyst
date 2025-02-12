@@ -14,11 +14,9 @@ class FileReader:
         
         rows = self.data.shape[0]
         dataReduced = self.data.copy()
-        print(len(self.data.columns))
-        print(rows)
-        print(dataReduced)
+        
         for i, columnName in enumerate(self.data.columns):
-            print("column ", columnName)
+            
            
             changedColumn = []
             if i != 0:
@@ -39,15 +37,12 @@ class FileReader:
                 
                 #centrar y reducir elementos
                 for item in columnValues:
-                    print(item, " ")
+                  
                     changedColumn.append(float((item-mean)/deviation))
-                print("\n")
+           
                 #cambiar por datos actualizados
                 dataReduced[columnName] = changedColumn
-                
-                
-        self.dataProcessed = dataReduced 
-        #print(dataReduced)       
+        self.dataProcessed = dataReduced    
     
     def printMatrix(self, matrix):
         for i in range(len(matrix)):
@@ -62,7 +57,7 @@ class FileReader:
         #empezando el paso 2
         #consiguiendo matriz transpuesta
         rows = self.dataProcessed.values
-        print(rows)
+        
         columns = self.dataProcessed.columns
 
         transposed = np.empty((len(columns), len(rows)))  
@@ -76,11 +71,9 @@ class FileReader:
            
 
         #numero escalar que hay que multiplicar
-        
         scalar = 1/(len(rows))
-        print(self.dataProcessed)
 
-        
+   
         #consiguiendo la matriz de correlaciones
         correlationMatrix = []
         for i in range(1,len(transposed)):
@@ -92,11 +85,64 @@ class FileReader:
                     item += (transposed[i][k] * rows[k][j]*scalar)   
                 row.append(item)
             correlationMatrix.append(row)
-        
+
         self.correlationMatrix = correlationMatrix                
         return correlationMatrix
     
-
-
-    
+    def createRelationsMatrix2(self):
+        #para pasos 1
+        self.centerReduce()
         
+        #empezando el paso 2
+        #consiguiendo matriz transpuesta
+        rows = self.dataProcessed.values
+        
+        columns = self.dataProcessed.columns
+
+        transposed = rows[:,1:].T 
+        correlationMatrix = transposed @ rows[:,1:]
+
+
+        #numero escalar que hay que multiplicar
+        scalar = 1/(len(rows))
+        correlationMatrix = correlationMatrix*scalar
+
+        self.correlationMatrix = correlationMatrix.tolist()
+        
+        return correlationMatrix
+    
+  
+    def eigen(self):        
+        #paso 3: valores y vectores propios
+        values, vectors = np.linalg.eig(self.correlationMatrix)
+        
+        #ordenamiento junto con los vectores
+        for i in range(len(values)):
+            for j in range(i, len(values)):
+                if(values[j] >  values[i]):
+                    vector_val1 = np.copy(vectors[i])
+                    vector_val2 = np.copy(vectors[j])
+                    
+                    vectors[i] = vector_val2
+                    vectors[j] = vector_val1
+                    
+                    val = values[i]
+                    values[i] = values[j]
+                    values[j] = val 
+
+        #print(values)
+        print(vectors)
+
+        #paso 4: union de vectores en matriz
+        self.orderedMatrix = vectors.T
+        
+        
+
+    def principalComponents(self):
+        #paso 5: matriz de componentes principales
+        
+        
+        rows = self.dataProcessed.values
+        print()
+        pComponents = rows[:,1:]  @ self.orderedMatrix
+        print(pComponents)
