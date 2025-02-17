@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 class FileReader:
     def __init__(self, dir):
@@ -15,9 +17,7 @@ class FileReader:
         rows = self.data.shape[0]
         dataReduced = self.data.copy()
         
-        for i, columnName in enumerate(self.data.columns):
-            
-           
+        for i, columnName in enumerate(self.data.columns):           
             changedColumn = []
             if i != 0:
                 column = self.data[columnName]
@@ -37,12 +37,13 @@ class FileReader:
                 
                 #centrar y reducir elementos
                 for item in columnValues:
-                  
                     changedColumn.append(float((item-mean)/deviation))
            
                 #cambiar por datos actualizados
                 dataReduced[columnName] = changedColumn
         self.dataProcessed = dataReduced    
+        print("\npaso 1")
+        print(dataReduced)
     
     def printMatrix(self, matrix):
         for i in range(len(matrix)):
@@ -54,10 +55,11 @@ class FileReader:
         #para pasos 1
         self.centerReduce()
 
+        
+
         #empezando el paso 2
         #consiguiendo matriz transpuesta
         rows = self.dataProcessed.values
-        
         columns = self.dataProcessed.columns
 
         transposed = np.empty((len(columns), len(rows)))  
@@ -97,7 +99,6 @@ class FileReader:
         #empezando el paso 2
         #consiguiendo matriz transpuesta
         rows = self.dataProcessed.values
-        
         columns = self.dataProcessed.columns
 
         transposed = rows[:,1:].T 
@@ -108,6 +109,8 @@ class FileReader:
         scalar = 1/(len(rows))
         correlationMatrix = correlationMatrix*scalar
 
+        print("\nCorrelation Matrix")
+        print(correlationMatrix)
         self.correlationMatrix = correlationMatrix.tolist()
         
         return correlationMatrix
@@ -132,18 +135,78 @@ class FileReader:
                     values[j] = val 
 
         #print(values)
-        print(vectors)
+        #print(vectors)
 
         #paso 4: union de vectores en matriz
         self.orderedMatrix = vectors.T
         
+        self.properValues = values
+        self.properVector = vectors
         
-
+        
     def principalComponents(self):
         #paso 5: matriz de componentes principales
-        
-        
         rows = self.dataProcessed.values
-        print()
         pComponents = rows[:,1:]  @ self.orderedMatrix
-        print(pComponents)
+        #print(pComponents)
+        self.pComponents = pComponents
+
+#paso 6: matriz de calidades de individuos 
+    def individualsQualities(self):
+        pComponents = self.pComponents
+        rows = self.dataProcessed.values
+
+        C = pComponents ** 2 #matriz de componentes principales elevado al cuadrado
+        X = rows[:,1:] ** 2 #matriz de datos procesados al cuadrado
+
+        iQualities = C / np.sum(X)
+        #print(iQualities)
+
+        self.iQualities = iQualities
+
+#paso 7: matriz de coordenada de las variables
+    def variablesCoordinates(self):
+        diagonal = np.sqrt(np.diag(self.properValues)) #matriz diagonal de la raiz cuadrada de los valores propios
+        vCoordinates = self.properVector * diagonal
+        #print(vCoordinates)
+        self.vCoordinates = vCoordinates
+
+#paso 8: matriz de calidades de las variables
+    def variablesQualities(self):
+        vQualities = self.vCoordinates **2 #matriz de coordenadas de las variables elevada al cuadrado
+        #print(vQualities)
+        self.vQualities = vQualities
+
+#paso 9: vector de inercias de los ejes
+    def inertiaVector(self):
+        iVector = self.properValues / np.sum(self.properValues)
+
+        #print (iVector)
+        self.iVector = iVector
+
+    def graphCorrelationMatrix(self):
+        fig, axis = plt.subplots(figsize=(6, 6)) #tamaño del gráfico
+        circle = plt.Circle((0, 0), 1, color='gray', fill=False, linestyle='dashed', linewidth=1)
+        axis.add_patch(circle) #agrega el circulo al gráfico
+
+        #dibuja las lineas de ambos ejes
+        plt.axhline(0, color='black', linewidth=0.5)
+        plt.axvline(0, color='black', linewidth=0.5)
+
+        var_coordinates = self.vCoordinates[:, :2]  
+        column_names = self.data.columns[1:] #nombre de las materias 
+
+        print("\ncoordenadas")
+        print(var_coordinates)
+
+        for i, (x, y) in enumerate(var_coordinates):
+            plt.arrow(0, 0, x, y, head_width=0.05, head_length=0.05, fc='b', ec='b')#dibuja la flecha segun corresponde
+            plt.text(x, y, column_names[i], fontsize=12, color='red', ha='center', va='center')#escribe el nombre de la materia
+    
+        plt.xlim(-1.2, 1.2)#pone limite en los ejes para asegurar que ningun dato quede de fuera
+        plt.ylim(-1.2, 1.2)
+        plt.xlabel("Componente 1")
+        plt.ylabel("Componente 2")
+        plt.title("Círculo de Correlación")
+        plt.grid(True, linestyle='--', linewidth=0.5)
+        plt.show()
