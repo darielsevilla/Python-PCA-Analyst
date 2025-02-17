@@ -88,7 +88,8 @@ class FileReader:
                 row.append(item)
             correlationMatrix.append(row)
 
-        self.correlationMatrix = correlationMatrix                
+        self.correlationMatrix = correlationMatrix  
+                      
         return correlationMatrix
     
     def createRelationsMatrix2(self):
@@ -118,7 +119,7 @@ class FileReader:
     def eigen(self):        
         #paso 3: valores y vectores propios
         values, vectors = np.linalg.eig(self.correlationMatrix)
-        
+        vectors = vectors.T
         #ordenamiento junto con los vectores
         for i in range(len(values)):
             for j in range(i, len(values)):
@@ -133,23 +134,21 @@ class FileReader:
                     values[i] = values[j]
                     values[j] = val 
 
-        print("\nvalores propios")
-        print(values)
-        print("\nvectores propios")
-        print(vectors)
-
         #paso 4: union de vectores en matriz
         self.orderedMatrix = vectors.T
         print("\nvectores en matriz")
         print(vectors.T)
         
         self.properValues = values
-        self.properVector = vectors
+        self.properVector = vectors.T
         
         
     def principalComponents(self):
         #paso 5: matriz de componentes principales
         rows = self.dataProcessed.values
+        print("\nX matrix")
+        print(rows[:,1:])
+        print()
         pComponents = rows[:,1:]  @ self.orderedMatrix
         print(pComponents)
         self.pComponents = pComponents
@@ -159,10 +158,22 @@ class FileReader:
         pComponents = self.pComponents
         rows = self.dataProcessed.values
 
-        C = pComponents ** 2 #matriz de componentes principales elevado al cuadrado
+        #C = pComponents ** 2 #matriz de componentes principales elevado al cuadrado
+        iQualities = pComponents ** 2 #matriz de componentes principales elevado al cuadrado
         X = rows[:,1:] ** 2 #matriz de datos procesados al cuadrado
 
-        iQualities = C / np.sum(X)
+        for i in range(len(X)):
+            suma = 0
+            for j in range(len(X[i])):
+                suma += X[i][j]
+            
+            for k in range(len(iQualities[i])):
+                iQualities[i][k] /= suma
+
+        #iQualities = C / np.sum(X)
+        print("iq1\n")
+        print(iQualities)
+      
         #print(iQualities)
 
         self.iQualities = iQualities
@@ -170,22 +181,27 @@ class FileReader:
 #paso 7: matriz de coordenada de las variables
     def variablesCoordinates(self):
         diagonal = np.sqrt(np.diag(self.properValues)) #matriz diagonal de la raiz cuadrada de los valores propios
-        vCoordinates = self.properVector * diagonal
-        #print(vCoordinates)
+        print("diagonal\n")
+        print(diagonal)
+        vCoordinates = self.properVector @ diagonal
+        print("coordenadas\n")
+        print(vCoordinates)
         self.vCoordinates = vCoordinates
-
+        
 #paso 8: matriz de calidades de las variables
     def variablesQualities(self):
         vQualities = self.vCoordinates **2 #matriz de coordenadas de las variables elevada al cuadrado
         #print(vQualities)
         self.vQualities = vQualities
-
+       
 #paso 9: vector de inercias de los ejes
     def inertiaVector(self):
-        iVector = self.properValues / np.sum(self.properValues)
-
-        #print (iVector)
+        #iVector = self.properValues / np.sum(self.properValues)
+        iVector = (self.properValues*100)/len(self.properValues)
+     
         self.iVector = iVector
+        print("inercia\n")
+        print(self.iVector)
 
     def graphCorrelationMatrix(self):
         fig, axis = plt.subplots(figsize=(6, 6)) #tamaño del gráfico
