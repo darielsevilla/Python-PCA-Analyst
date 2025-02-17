@@ -86,7 +86,8 @@ class FileReader:
                 row.append(item)
             correlationMatrix.append(row)
 
-        self.correlationMatrix = correlationMatrix                
+        self.correlationMatrix = correlationMatrix  
+                      
         return correlationMatrix
     
     def createRelationsMatrix2(self):
