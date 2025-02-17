@@ -108,8 +108,8 @@ class FileReader:
         scalar = 1/(len(rows))
         correlationMatrix = correlationMatrix*scalar
 
-        print("\nCorrelation Matrix")
-        print(correlationMatrix)
+        #print("\nCorrelation Matrix")
+        #print(correlationMatrix)
         self.correlationMatrix = correlationMatrix.tolist()
         
         return correlationMatrix
@@ -133,11 +133,15 @@ class FileReader:
                     values[i] = values[j]
                     values[j] = val 
 
-        #print(values)
-        #print(vectors)
+        print("\nvalores propios")
+        print(values)
+        print("\nvectores propios")
+        print(vectors)
 
         #paso 4: union de vectores en matriz
         self.orderedMatrix = vectors.T
+        print("\nvectores en matriz")
+        print(vectors.T)
         
         self.properValues = values
         self.properVector = vectors
@@ -147,7 +151,7 @@ class FileReader:
         #paso 5: matriz de componentes principales
         rows = self.dataProcessed.values
         pComponents = rows[:,1:]  @ self.orderedMatrix
-        #print(pComponents)
+        print(pComponents)
         self.pComponents = pComponents
 
 #paso 6: matriz de calidades de individuos 
