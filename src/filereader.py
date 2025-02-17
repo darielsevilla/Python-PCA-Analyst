@@ -134,8 +134,6 @@ class FileReader:
                     values[i] = values[j]
                     values[j] = val 
 
-        #print(values)
-        #print(vectors)
 
         #paso 4: union de vectores en matriz
         self.orderedMatrix = vectors.T
