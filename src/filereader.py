@@ -55,8 +55,6 @@ class FileReader:
         #para pasos 1
         self.centerReduce()
 
-        
-
         #empezando el paso 2
         #consiguiendo matriz transpuesta
         rows = self.dataProcessed.values
@@ -71,10 +69,8 @@ class FileReader:
                 else:
                     transposed[j][i] = None
            
-
         #numero escalar que hay que multiplicar
         scalar = 1/(len(rows))
-
    
         #consiguiendo la matriz de correlaciones
         correlationMatrix = []
@@ -103,7 +99,6 @@ class FileReader:
 
         transposed = rows[:,1:].T 
         correlationMatrix = transposed @ rows[:,1:]
-
 
         #numero escalar que hay que multiplicar
         scalar = 1/(len(rows))
@@ -141,7 +136,6 @@ class FileReader:
         
         self.properValues = values
         self.properVector = vectors.T
-        
         
     def principalComponents(self):
         #paso 5: matriz de componentes principales
@@ -200,32 +194,58 @@ class FileReader:
         iVector = (self.properValues*100)/len(self.properValues)
      
         self.iVector = iVector
-        print("inercia\n")
         print(self.iVector)
 
-    def graphCorrelationMatrix(self):
-        fig, axis = plt.subplots(figsize=(6, 6)) #tamaño del gráfico
-        circle = plt.Circle((0, 0), 1, color='gray', fill=False, linestyle='dashed', linewidth=1)
+    def graphCorrelationMatrix(self, dim1, dim2):
+        fig, axis = plt.subplots(figsize=(6,6)) #tamaño del gráfico
+        circle = plt.Circle((0, 0), 1, color='teal', fill=False, linestyle='dashed', linewidth=1)
         axis.add_patch(circle) #agrega el circulo al gráfico
 
         #dibuja las lineas de ambos ejes
         plt.axhline(0, color='black', linewidth=0.5)
         plt.axvline(0, color='black', linewidth=0.5)
 
-        var_coordinates = self.vCoordinates[:, :2]  
-        column_names = self.data.columns[1:] #nombre de las materias 
+        coordinates = self.vCoordinates[:, [dim1, dim2]]
+        courses = self.data.columns[1:] #nombre de las materias 
 
         print("\ncoordenadas")
-        print(var_coordinates)
+        print(coordinates)
 
-        for i, (x, y) in enumerate(var_coordinates):
-            plt.arrow(0, 0, x, y, head_width=0.05, head_length=0.05, fc='b', ec='b')#dibuja la flecha segun corresponde
-            plt.text(x, y, column_names[i], fontsize=12, color='red', ha='center', va='center')#escribe el nombre de la materia
+        for i, (x, y) in enumerate(coordinates):
+            plt.arrow(0, 0, x, y, head_width=0.05, head_length=0.05, fc='teal', ec='teal')#dibuja la flecha segun corresponde
+            plt.text(x, y, courses[i], fontsize=12, color='brown', ha='center', va='center')#escribe el nombre de la materia
     
         plt.xlim(-1.2, 1.2)#pone limite en los ejes para asegurar que ningun dato quede de fuera
         plt.ylim(-1.2, 1.2)
-        plt.xlabel("Componente 1")
-        plt.ylabel("Componente 2")
-        plt.title("Círculo de Correlación")
+
+        plt.xlabel(f"Componente {dim1}", fontsize=12, color='black')
+        plt.ylabel(f"Componente {dim2}", fontsize=12, color='black')
+        plt.title(f"Círculo de Correlación (Dim {dim1}, {dim2})")
+
         plt.grid(True, linestyle='--', linewidth=0.5)
+        plt.show()
+
+    def graphPrincipalPlane(self, dim1, dim2):
+        fig, axis = plt.subplots(figsize=(10, 6))  # Tamaño del gráfico
+    
+        # Extraer los dos primeros componentes principales
+        pComponents = self.pComponents[:, [dim1,dim2]]  
+        nombres = self.data.iloc[:, 0]  # Nombres de los individuos
+
+        # Graficar cada individuo en el plano principal
+        plt.scatter(pComponents[:, 0], pComponents[:, 1], color='purple', alpha=0.7, label="Personas")
+
+        # Agrega los nombres a cada punto
+        for i, (x, y) in enumerate(pComponents):
+            plt.text(x, y, nombres[i], fontsize=9, color='black', ha='right', va='bottom')
+
+        plt.axhline(0, color='gray', linewidth=0.7, linestyle="dashed")
+        plt.axvline(0, color='gray', linewidth=0.7, linestyle="dashed")
+
+        plt.xlabel(f"Componente {dim1}", fontsize=12, color='black')
+        plt.ylabel(f"Componente {dim2}", fontsize=12, color='black')
+        plt.title(f"Plano Principal (Dim {dim1}, {dim2})", fontsize=14, color='black')
+
+        plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
+        plt.legend()
         plt.show()
