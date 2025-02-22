@@ -126,7 +126,7 @@ class FileReader:
                 if(values[j] >  values[i]):
                     vector_val1 = np.copy(vectors[i])
                     vector_val2 = np.copy(vectors[j])
-                    
+
                     vectors[i] = vector_val2
                     vectors[j] = vector_val1
                     
@@ -137,9 +137,12 @@ class FileReader:
 
         #paso 4: union de vectores en matriz
         self.orderedMatrix = vectors.T
-        
         self.properValues = values
         self.properVector = vectors.T
+        print("values\n")
+        print(self.properValues)
+        print("vectors\n")
+        print(self.properVector)
         
         
     def principalComponents(self):
