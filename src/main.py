@@ -16,9 +16,7 @@ def main():
     fileReader.variablesQualities()
     print("\nInertia Vector")
     fileReader.inertiaVector()
-    #fileReader.test()
     fileReader.graphCorrelationMatrix(0,1)
-    #fileReader.graphCorrelationMatrix34()
     #fileReader.graphCorrelationMatrix(3,4)
 
 if __name__ == '__main__':
