@@ -50,7 +50,7 @@ class FileReader:
                 dataReduced[columnName] = changedColumn
       
         self.dataProcessed = dataReduced    
-        print("\npaso 1")
+        print("\nPaso #1 - Matriz Centrada y Reducida")
         print(dataReduced)
     
 
@@ -107,52 +107,48 @@ class FileReader:
         scalar = 1/(len(rows))
         correlationMatrix = correlationMatrix*scalar
 
-        print("\nCorrelation Matrix")
+        print("\nPaso #2 - Matriz de Correlaciones")
         self.printMatrix(correlationMatrix)
         self.correlationMatrix = correlationMatrix.tolist()
         
         return correlationMatrix
-    
-  
+
     def eigen(self):        
         #paso 3: valores y vectores propios
         values, vectors = np.linalg.eig(self.correlationMatrix)
-        #valores originales
-        print("\nvectores en matriz")
-        print(vectors)
         sorted_indices = np.argsort(values)[::-1]
     
+        print("\nPaso #3 - Vectores y Valores Propios")
+        print("Vectores Propios")
+        print(vectors)
+        print("\nValores propios")
+        print(values)
+
         #ordenamiento junto con los vectores
         for i in range(len(values)):
             for j in range(i, len(values)):
                 if(values[j] >  values[i]):
                     # Intercambiar valores propios
                     values[i], values[j] = values[j], values[i]
-                    print("swap")
+            
                     # Intercambiar vectores propios
                     temp = np.copy(vectors[:, i])
                     vectors[:, i] = vectors[:, j]
                     vectors[:, j] = temp
-        
+
         #paso 4: union de vectores en matriz
         self.properValues = values
         self.properVector = vectors
-        print("values\n")
-        print(self.properValues)
-        print("vectors\n")
+        
+        print("\nPaso #4 - Matriz de Vectores Propios")
         print(self.properVector)
         
     def principalComponents(self):
         #paso 5: matriz de componentes principales
         rows = self.dataProcessed.values
-        print("\nX matrix")
-        self.printMatrix(rows[:,1:])
-        print("\nproper vectors")
-        print(self.properVector)
-        print()
-     
+
         pComponents = rows[:,1:]@self.properVector
-        print("\ncomponents")
+        print("\nPaso #5 - Matriz de Componentes Principales")
         self.printMatrix(pComponents)
         self.pComponents = pComponents
 
@@ -160,65 +156,52 @@ class FileReader:
     def individualsQualities(self):
         pComponents = self.pComponents
         rows = self.dataProcessed.values
-        iQualities = []
-
-        print("fila")
-        print(len(pComponents))
-        print("columna")
-        print(len(pComponents[0]))
         
-        #iQualities = pComponents ** 2 #matriz de componentes principales elevado al cuadrado
-        X = rows[:,1:]  ** 2 #matriz de datos procesados al cuadrado
+        iQualities = pComponents ** 2 #matriz de componentes principales elevado al cuadrado
+        X = rows[:,1:] ** 2 #matriz de datos procesados al cuadrado
         
         for i in range(len(iQualities)):
             suma = 0
             for j in range(len(X[i])):
                 suma += X[i][j]
             
-            #for k in range(len(iQualities[i])):
-                #iQualities[i][k] /= suma
+            for k in range(len(X[i])):
+                iQualities[i][k] /= suma
     
-        print("calidad de individuos\n")      
+        print("\nPaso #6 - Matriz de Calidades de Individuos")      
         self.printMatrix(iQualities)
 
         self.iQualities = iQualities
 
     #paso 7: matriz de coordenada de las variables
     def variablesCoordinates(self):
-        
         diagonal = np.sqrt(np.diag(self.properValues)) #matriz diagonal de la raiz cuadrada de los valores propios
-        rows = self.dataProcessed.values
-        print(self.properValues)
-        print("diagonal\n")
-        print(rows[:,1:])
-        print("vectors\n")
-        print(self.properVector)
+        
         vCoordinates = np.dot(diagonal,self.properVector)
-        print("coordenadas\n")
+
+        print("\nPaso #7 - Matriz de Coordenadas de la Variables")
         print(vCoordinates)
         self.vCoordinates = vCoordinates
 
     #paso 8: matriz de calidades de las variables
     def variablesQualities(self):
-        vQualities = (self.vCoordinates**2) 
-        print("qualities")
-        print(vQualities)
+        vQualities = (self.vCoordinates**2)
         fil, col = vQualities.shape
         for i in range(fil):
             for j in range(col):
-                
                 vQualities[i][j] /= self.properValues[j]
-        print("Qualities calculated")
-        print(vQualities)
+
+        print("\nPaso #8 - Matriz de Calidades de las Variables")
+        self.printMatrix(vQualities)
         self.vQualities = vQualities
        
     #paso 9: vector de inercias de los ejes
     def inertiaVector(self):
-        #iVector = self.properValues / np.sum(self.properValues)
         iVector = (self.properValues*100)/len(self.properValues)
-     
         self.iVector = iVector
-        print(self.iVector)
+
+        print("\nPaso #9 - Vector de Inercias de los Ejes")
+        print(self.iVector, end="\n\n")
 
     def graphCorrelationMatrix(self, dim1, dim2):
         fig, axis = plt.subplots(figsize=(6,6)) #tamaño del gráfico
@@ -230,8 +213,6 @@ class FileReader:
         plt.axvline(0, color='black', linewidth=0.5)
 
         coordinates = self.vCoordinates[:, [dim1, dim2]]
-        print("\ncoordenadas")
-        print(coordinates)
         norms = np.linalg.norm(coordinates, axis=1, keepdims=True)
         coordinates = coordinates / norms
         courses = self.data.columns[1:] #nombre de las materias 
@@ -246,7 +227,6 @@ class FileReader:
         plt.xlabel(f"Componente {dim1}", fontsize=12, color='black')
         plt.ylabel(f"Componente {dim2}", fontsize=12, color='black')
         plt.title(f"Círculo de Correlación (Dim {dim1}, {dim2})")
-
         
         for i, (x, y) in enumerate(coordinates):
             plt.quiver(0, 0, x, y, angles='xy', scale_units='xy', scale=1, color='teal', width=0.005)
