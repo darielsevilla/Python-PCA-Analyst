@@ -246,8 +246,14 @@ class FileReader:
     def graphPrincipalPlane(self, dim1, dim2):
         fig, axis = plt.subplots(figsize=(10, 6))  # Tamaño del gráfico
         max_val = np.max(np.abs(self.vCoordinates[:, [dim1, dim2]]))
-        plt.xlim(-max_val * 1.1, max_val * 1.1)
-        plt.ylim(-max_val * 1.1, max_val * 1.1)
+
+        if dim1 == 0 and dim2 == 1:
+            plt.xlim(-2.5, 3.5)
+            plt.ylim(-2.0, 2.0)
+        else:
+            plt.xlim(-0.70, 0.70)
+            plt.ylim(-0.20, 0.20)
+
         # Extraer los dos primeros componentes principales
         pComponents = self.pComponents[:, [dim1,dim2]]  
         nombres = self.data.iloc[:, 0]  # Nombres de los individuos
